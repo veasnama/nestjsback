@@ -10,6 +10,16 @@ services:
     networks:
       - postgres-network
   
+  test-db:
+    image: 'postgres:latest'
+    ports:
+      - 5435:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123
+      POSTGRES_DB: nest
+    networks:
+      - postgres-network
   pgadmin:
     image: dpage/pgadmin4
     ports:
