@@ -12,16 +12,15 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule } from '@nestjs/config';
 @Module({
   imports: [
-    ConfigModule.forRoot({}),
+    ConfigModule.forRoot({
+      isGlobal: true
+    }),
     UserModule,
     BookmarkModule,
     PrismaModule,
-    JwtModule.register({
-      secret: 'DHAKDSHFKAHDFHAKSDJFH1231231231',
-      signOptions: { expiresIn: '1d' },
-    }),
+    JwtModule.register({}),
   ],
   controllers: [AppController, AuthController],
   providers: [AppService, AuthService, BookmarkService, PrismaService],
 })
-export class AppModule {}
+export class AppModule { }

@@ -1,15 +1,17 @@
-import { Injectable, Get, BadRequestException } from '@nestjs/common';
+import { Injectable, Get, BadRequestException, HttpCode, HttpStatus } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as argon2 from 'argon2';
 import { AuthDto } from './dto';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 @Injectable()
 export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
-  ) {}
+    private config: ConfigService
+  ) { }
   private readonly secretKey = 'DHAKDSHFKAHDFHAKSDJFH1231231231';
 
   async signup(dto: AuthDto) {
@@ -31,12 +33,7 @@ export class AuthService {
         },
       })
       .then((user) => {
-        // user created successfully
-        delete user.hash;
-        return {
-          msg: 'User created success',
-          payload: user,
-        };
+        return user;
       })
       .catch((error) => {
         if (error instanceof PrismaClientKnownRequestError) {
@@ -50,9 +47,25 @@ export class AuthService {
           console.error(error);
         }
       });
-    // return saved user
-    return user;
+    // user created successfully
+    return {
+      msg: 'User created success',
+      payload: user,
+    };
   }
+  async signToken(userId: number, email: string): Promise<{ access_token: string }> {
+    const payload = {
+      sub: userId,
+      email
+    }
+    const jwt = await this.jwtService.signAsync(payload, {
+      expiresIn: '15m',
+      secret: this.config.get('SUPER_SECRET')
+    }
+    );
+    return { access_token: jwt }
+  }
+  @HttpCode(HttpStatus.OK)
   async signin(dto: AuthDto) {
     // check if a user exist
     const user = await this.prisma.user.findUnique({
@@ -67,11 +80,6 @@ export class AuthService {
     if (!isValidPassword) {
       throw new BadRequestException('Invalid credential');
     }
-    const jwt = await this.jwtService.signAsync({ id: user.id });
-    return {
-      msg: 'signin success',
-      token: jwt,
-      user: user,
-    };
+    return this.signToken(user.id, user.email);
   }
 }

@@ -1,24 +1,32 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
-@Controller('user')
+import { AuthGuard } from '@nestjs/passport';
+import { AuthUser } from './decorator';
+import { JwtGuard } from 'src/Auth/guard';
+import { User } from '@prisma/client';
+@Controller('users')
 export class UserController {
-
     constructor(private Userservice: UserService) {
 
     }
-    @Post('/create')
-    CreateUser(@Body() body : Request) {
-        this.CreateUser(body)
+    @Post('create')
+    CreateUser(@Body() body: Request) {
+        this.Userservice.CreateUser(body)
     }
-    @Post('/remove')
-    RemoveUser(@Body() body : Request) {
-        this.RemoveUser(body)
+    @UseGuards(JwtGuard)
+    @Get('me')
+    getprofile(@AuthUser() user: User) {
+        return user;
     }
-    @Post('/update')
+    @Post('remove')
+    RemoveUser(@Body() body: Request) {
+        this.Userservice.RemoveUser(body)
+    }
+    @Post('update')
     UpdateUser(@Body() body: Request) {
-        this.UpdateUser(body)
+        this.Userservice.UpdateUser(body)
     }
-    @Get('/profile')
+    @Get('profile')
     UserProfile(@Query() query: Request) {
         this.UserProfile(query)
     }
