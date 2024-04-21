@@ -1,9 +1,10 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { AppModule } from './../src/app.module';
 import * as pactum from 'pactum';
 import { PrismaService } from './../src/prisma/prisma.service';
 import { AuthDto } from 'src/Auth/dto';
+import { describe } from 'node:test';
 describe('AppController (e2e)', () => {
   let app: INestApplication;
   let prisma: PrismaService;
@@ -97,7 +98,16 @@ describe('AppController (e2e)', () => {
           .spec()
           .post('/auth/signin')
           .withBody(dto)
-          .expectStatus(200);
+          .expectStatus(200).stores('userAt', 'access_token');
+      });
+    });
+  });
+  describe('User', () => {
+    describe('Get a user ', () => {
+      it('It shoulud return a user', () => {
+        return pactum.spec().get('/users/user').withHeaders({
+          Authorization: 'Bearer $S{userAt}'
+        }).expectStatus(200);
       });
     });
   });

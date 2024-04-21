@@ -1,4 +1,9 @@
-import { Injectable, Get, BadRequestException, HttpCode, HttpStatus } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import * as argon2 from 'argon2';
 import { AuthDto } from './dto';
@@ -10,9 +15,9 @@ export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
-    private config: ConfigService
-  ) { }
-  private readonly secretKey = 'DHAKDSHFKAHDFHAKSDJFH1231231231';
+    private config: ConfigService,
+  ) {}
+  // private readonly secretKey = 'DHAKDSHFKAHDFHAKSDJFH1231231231';
 
   async signup(dto: AuthDto) {
     // create a hash of password
@@ -53,17 +58,19 @@ export class AuthService {
       payload: user,
     };
   }
-  async signToken(userId: number, email: string): Promise<{ access_token: string }> {
+  async signToken(
+    userId: number,
+    email: string,
+  ): Promise<{ access_token: string }> {
     const payload = {
       sub: userId,
-      email
-    }
+      email,
+    };
     const jwt = await this.jwtService.signAsync(payload, {
-      expiresIn: '15m',
-      secret: this.config.get('SUPER_SECRET')
-    }
-    );
-    return { access_token: jwt }
+      expiresIn: '30m',
+      secret: this.config.get('SUPER_SECRET'),
+    });
+    return { access_token: jwt };
   }
   @HttpCode(HttpStatus.OK)
   async signin(dto: AuthDto) {
